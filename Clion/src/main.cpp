@@ -31,6 +31,7 @@ bool trigger_event(int event) {
      *      event: [0, 1]
      *          event to trigger
      *          it will be sent to event handler and the numbers are index of events there
+     *          {"type": "event", "data": [timestamp(integer), event(String)]}
      */
     if (is_master) {
         // add the event and broadcast the response to all listeners
@@ -61,12 +62,25 @@ void TcpServer::message_handler(int index, const String &message) {
      *          NOTE: messages are terminated with TcpSocket.terminator
      *          messages:
      *              time{timestamp(s)}: to update module time
+     *              NO RESPONSE
+     *              -----------------------------------------------
      *              voltage{percent}: [ONLY SENT BY SLAVE] set slave module battery percent
+     *              NO RESPONSE
+     *              -----------------------------------------------
      *              event{eventId}: [ONLY SENT BY SLAVE] an event is triggered from slave side
+     *              NO RESPONSE
+     *              ----------------------------------------------
      *              read: read events
+     *              {"type": "logs", "data": [[timestamp(integer), event(String)]]}
+     *              ----------------------------------------------
      *              flush: flush events
+     *              NO RESPONSE
+     *              ----------------------------------------------
      *              readAndFlush: read and flush events
+     *              {"type": "logs", "data": [[timestamp(integer), event(String)]]}
+     *              ----------------------------------------------
      *              readVoltage: read module voltages
+     *              {"type": "voltage", "data": [[masterBattery(integer), slaveBattery(integer)]]}
      */
     if (message.startsWith("time")) {
         // time1645801386000
