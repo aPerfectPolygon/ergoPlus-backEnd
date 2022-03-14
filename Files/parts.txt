@@ -1,0 +1,23 @@
+TP4056
+LI-PO (1200 Mah)
+SPDT Switch (https://www.sparkfun.com/products/9609)
+MCP1700-3302E
+Capacitor	Ceramic		100nF
+Capacitor	Electrolic	100uF
+Resistor	27K
+Resistor	100K
+Resistor	10K X 4
+Resistor	330Ohm X 2
+Resistor	33K (R0 for FSR (this value is just a proposal))
+FSR
+DIODE		1N4001
+Transistor	c945 X 2
+Vibration Motor	
+Push Button X 2
+esp8266 (esp 12-e)
+
+-------------------------------------------------
+* NodeMcu V2
+Arduino
+Wemos D1 R1
+some Leds and 330Ohm Resistors for testing
