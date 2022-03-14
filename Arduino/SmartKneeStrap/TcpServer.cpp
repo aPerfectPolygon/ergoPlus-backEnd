@@ -5,6 +5,9 @@ TcpServer::TcpServer(int port) {
 };
 
 void TcpServer::scan_and_add() {
+    /*
+     * check  if new clients are available and if they can be added
+     */
     WiFiClient client = server.available();
     if (client && client.connected()) {
         for (int i = 0; i < max_clients; i++) {

@@ -4,6 +4,13 @@
 #include "utils.h"
 
 class TimedDigitalOutput {
+    /*
+     * change a DigitalOutput state and go back to last state after `return_after`ms
+     *
+     * call `handle()` periodically to handle pin times
+     * call `change_stable_state()` to change pin default state
+     * call `change()` to temporarily revert pin state
+     */
 private:
     int return_after;
     unsigned long int changed_at = 0;

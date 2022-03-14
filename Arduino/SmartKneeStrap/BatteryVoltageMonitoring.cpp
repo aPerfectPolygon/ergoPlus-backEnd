@@ -1,16 +1,14 @@
 #include "BatteryVoltageMonitoring.h"
 
-BatteryVoltageMonitoring::BatteryVoltageMonitoring(){
-    pinMode(A0, INPUT);
+BatteryVoltageMonitoring::BatteryVoltageMonitoring(int _min, int _max){
+    max = _max;
+    min = _min;
 }
 
 bool BatteryVoltageMonitoring::check(){
-    if (value >= 0){
-        int now = int(millis() / 1000);
-        if (now - last_check < check_interval)
-            return false;
-        last_check = now;
+    if (value == 0 or check_time.check(int(millis() / 1000))) {
+        value = map(analogRead(A0), min, max, 0, 100);
+        return true;
     }
-    value = map(analogRead(A0), 0, 1024, 0, 100);
-    return true;
+    return false;
 }

@@ -4,11 +4,20 @@
 #include "TcpSocket.h"
 
 class TcpClient : public TcpSocket {
+    /*
+     * client-side of a TcpSocket which will connect to `ip` on `port`
+     * every time a message is received from server `message_handler()` will be called with the message
+     *
+     * call `handler()` periodically to handle client status
+     * call `send()` to send a string to server
+     * call `send_json()` to send a JSON string to server
+     *
+     * SeeAlso: TcpSocket
+     */
 private:
     IPAddress ip;
     int port;
-    unsigned long last_check = 0;
-    const int check_interval = 1; // seconds
+    CheckTime check_time = CheckTime(0, 1);
 public:
     WiFiClient client;
 

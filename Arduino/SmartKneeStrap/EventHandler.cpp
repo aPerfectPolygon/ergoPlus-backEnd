@@ -1,16 +1,28 @@
 #include "EventHandler.h"
 
-String EventHandler::add(int event) {
+String EventHandler::add(int event, bool force) {
+    /*
+     * add event to queue and return a JSON string of the event
+     * `force` will bypass time checking of event
+     */
     if (current_event >= max_events)
+        // flush if overflow
         flush();
 
-    event_times[current_event] = int(millis() / 1000);
+    unsigned long now = millis();
+    if (not force and (now - events_last_triggerred[event]) < events_timeout[event])
+        return "";
+
+    // add event to queue
+    event_times[current_event] = int(now / 1000);
+    events_last_triggerred[event] = now;
     event_logs[current_event] = event;
-    String output =
-            "[" + String(startup_time + event_times[current_event]) + ",\"" + events[event_logs[current_event]] + "\"]";
     current_event++;
 
-    return output;
+    // return last event as String
+    return "[" +
+           String(startup_time + event_times[current_event-1]) + ",\"" + events[event_logs[current_event-1]] +
+           "\"]";
 }
 
 String EventHandler::read() {

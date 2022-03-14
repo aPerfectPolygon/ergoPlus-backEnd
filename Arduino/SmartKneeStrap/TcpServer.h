@@ -4,6 +4,20 @@
 #include "TcpSocket.h"
 
 class TcpServer : public TcpSocket {
+    /*
+     * server-side of a TcpSocket which will create a TcpServer on `port`
+     * specify how many clients by setting `max_clients` and its related variables
+     * every time a message is received from client `message_handler()` will be called with the message
+     *
+     * call `handler()` periodically to handle client status
+     * call `broadcast()` to send a message to all connected clients
+     * call `broadcast_json()` to send a JSON message to all connected clients
+     * call `send()` to send a message to specified clients
+     * call `send_json()` to send a JSON message to specified clients
+     * call `scan_and_add()` to check if new clients are ready to connect
+     *
+     * SeeAlso: TcpSocket
+     */
 private:
     static const int max_clients = 3;
     bool clients_initialization[max_clients] = {false, false, false};

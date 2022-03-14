@@ -38,12 +38,9 @@ void TcpClient::log(const String &s, const String &tag) {
 //}
 
 void TcpClient::handler() {
-    // check tcp server status
     if (!is_connected()) {
-        int now = int(millis() / 1000);
-        if (now - last_check < check_interval)
+        if (!check_time.check())
             return;
-        last_check = now;
 
         print("connecting to server ...");
         client.connect(ip, port);

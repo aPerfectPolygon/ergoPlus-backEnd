@@ -5,6 +5,11 @@
 #include "utils.h"
 
 class TcpSocket {
+    /*
+     * Base class for TcpSockets
+     * sending and receiving on TcpSockets are terminated by `terminator`
+     * this class has all the low level functions to work with TcpSockets
+     */
 private:
     const char terminator = '\n';
 public:
