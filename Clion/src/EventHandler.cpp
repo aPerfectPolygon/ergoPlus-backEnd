@@ -20,9 +20,9 @@ String EventHandler::add(int event, bool force) {
     current_event++;
 
     // return last event as String
-    return "[" +
-           String(startup_time + event_times[current_event-1]) + ",\"" + events[event_logs[current_event-1]] +
-           "\"]";
+    return "[[" +
+           String(startup_time + event_times[current_event-1]) + "," + events[event_logs[current_event-1]] +
+           "]]";
 }
 
 String EventHandler::read() {
@@ -30,7 +30,7 @@ String EventHandler::read() {
     for (int i = 0; i < current_event; i++) {
         if (output != "")
             output += ",";
-        output += ("[" + String(startup_time + event_times[i]) + ",\"" + events[event_logs[i]] + "\"]");
+        output += ("[" + String(startup_time + event_times[i]) + "," + events[event_logs[i]] + "]");
     }
     return "[" + output + "]";
 }
