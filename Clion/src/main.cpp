@@ -6,12 +6,9 @@
 #include "DebounceHandler.h"
 #include "TimedDigitalOutput.h"
 #include "BatteryVoltageMonitoring.h"
-#include "AnalogThresholdDetector.h"
 
-#define sensorPin 17
-#define vibratorPin 14
-#define readVoltagePin 5
-#define readSensorPin 4
+#define sensorPin 5
+#define vibratorPin 4
 #define is_master true
 
 TcpServer tcp_server(8888);
@@ -20,8 +17,7 @@ WifiHandler wifi_handler(is_master);
 EventHandler event_handler;
 DebounceHandler debounce_handler;
 TimedDigitalOutput vibrator(vibratorPin, false, 500);
-BatteryVoltageMonitoring battery_voltage(700, 960);
-AnalogThresholdDetector sensor(sensorPin, 750);  // max thresh : 1024
+BatteryVoltageMonitoring battery_voltage(760, 1024);
 int slave_battery_voltage = 0;
 
 bool trigger_event(int event) {
@@ -123,11 +119,11 @@ void TcpClient::message_handler(const String &message) {
     }
 }
 
-void AnalogThresholdDetector::callback() {
+IRAM_ATTR void interrupt_callback(){
     /*
-     * this function is called by `AnalogThresholdDetector` every time sensor crosses pre-defined threshold
+     * this function is called by internal interrupt handler every time sensor goes low
      */
-    debounce_handler.add(sensor.pin, sensor.thresh, true);
+    debounce_handler.add(sensorPin, 0, false);
 }
 
 void DebounceHandler::callback(int pin, int state, bool fake) {
@@ -139,7 +135,7 @@ void DebounceHandler::callback(int pin, int state, bool fake) {
      *      state: the state which was event happened in
      *      fake: whether this event was fake or not
      */
-    if (fake or pin != sensorPin or state < sensor.thresh)
+    if (fake)
         return;
 
     if (is_master) {
@@ -154,11 +150,8 @@ void setup() {
     Serial.begin(115200);
     Serial.println("STARTING ....");
 
-    pinMode(readVoltagePin, OUTPUT);
-    digitalWrite(readVoltagePin, LOW);
-    pinMode(readSensorPin, OUTPUT);
-    digitalWrite(readSensorPin, LOW);
-    pinMode(sensorPin, INPUT);  // battery and sensor
+    pinMode(sensorPin, INPUT_PULLUP);  // sensor
+    attachInterrupt(sensorPin, interrupt_callback, FALLING);
 }
 
 void loop() {
@@ -167,12 +160,6 @@ void loop() {
     debounce_handler.handle();
     vibrator.handle();
 
-    digitalWrite(readVoltagePin, LOW);
-    digitalWrite(readSensorPin, HIGH);
-    sensor.check();
-
-    digitalWrite(readSensorPin, LOW);
-    digitalWrite(readVoltagePin, HIGH);
     if (battery_voltage.check() && !is_master)
         tcp_client.send("voltage" + String(battery_voltage.value));
 
