@@ -21,7 +21,7 @@ class EventHandler {
      */
 private:
     static const int events_count = 2;
-    const String events[events_count] = {"lor", "rol"};
+    const String events[events_count] = {"0", "1"};  // lor, rol
     const int events_timeout[events_count] = {1000, 1000};
 
     static const int max_events = 500;
