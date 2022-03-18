@@ -3,6 +3,7 @@
 BatteryVoltageMonitoring::BatteryVoltageMonitoring(int _min, int _max){
     max = _max;
     min = _min;
+    pinMode(A0, INPUT);
 }
 
 bool BatteryVoltageMonitoring::check(){
