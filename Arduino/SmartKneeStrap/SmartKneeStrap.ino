@@ -9,7 +9,7 @@
 
 #define sensorPin 5
 #define vibratorPin 4
-#define is_master true
+#define is_master false
 
 TcpServer tcp_server(8888);
 TcpClient tcp_client(IPAddress(192, 168, 1, 35), 8888);
@@ -17,7 +17,7 @@ WifiHandler wifi_handler(is_master);
 EventHandler event_handler;
 DebounceHandler debounce_handler;
 TimedDigitalOutput vibrator(vibratorPin, false, 500);
-BatteryVoltageMonitoring battery_voltage(700, 960);
+BatteryVoltageMonitoring battery_voltage(760, 1024);
 int slave_battery_voltage = 0;
 
 bool trigger_event(int event) {
