@@ -7,14 +7,16 @@
 #include "TimedDigitalOutput.h"
 #include "BatteryVoltageMonitoring.h"
 
+#define isClosedPin 12
 #define sensorPin 5
 #define vibratorPin 4
-#define is_master false
+#define is_master true
 
 TcpServer tcp_server(8888);
 TcpClient tcp_client(IPAddress(192, 168, 1, 35), 8888);
 WifiHandler wifi_handler(is_master);
 EventHandler event_handler;
+EventHandler is_closed_event_handler;
 DebounceHandler debounce_handler;
 TimedDigitalOutput vibrator(vibratorPin, false, 500);
 BatteryVoltageMonitoring battery_voltage(760, 1024);
@@ -27,7 +29,7 @@ bool trigger_event(int event) {
      *      event: [0, 1]
      *          event to trigger
      *          it will be sent to event handler and the numbers are index of events there
-     *          {"type": "event", "data": [timestamp(integer), event(String)]}
+     *          {"type": "event", "data": [timestamp(integer), event(integer)]}
      */
     if (is_master) {
         // add the event and broadcast the response to all listeners
@@ -66,14 +68,23 @@ void TcpServer::message_handler(int index, const String &message) {
      *              event{eventId}: [ONLY SENT BY SLAVE] an event is triggered from slave side
      *              NO RESPONSE
      *              ----------------------------------------------
+     *              isClosedRead: read events
+     *              {"type": "logs", "data": [[timestamp(integer), event(integer)]]}
+     *              ----------------------------------------------
+     *              isClosedFlush: flush events
+     *              NO RESPONSE
+     *              ----------------------------------------------
+     *              isClosedReadAndFlush: read and flush events
+     *              {"type": "logs", "data": [[timestamp(integer), event(integer)]]}
+     *              ----------------------------------------------
      *              read: read events
-     *              {"type": "logs", "data": [[timestamp(integer), event(String)]]}
+     *              {"type": "logs", "data": [[timestamp(integer), event(integer)]]}
      *              ----------------------------------------------
      *              flush: flush events
      *              NO RESPONSE
      *              ----------------------------------------------
      *              readAndFlush: read and flush events
-     *              {"type": "logs", "data": [[timestamp(integer), event(String)]]}
+     *              {"type": "logs", "data": [[timestamp(integer), event(integer)]]}
      *              ----------------------------------------------
      *              readVoltage: read module voltages
      *              {"type": "voltage", "data": [[masterBattery(integer), slaveBattery(integer)]]}
@@ -81,12 +92,21 @@ void TcpServer::message_handler(int index, const String &message) {
     if (message.startsWith("time")) {
         // time1645801386000
         // get timestamp from message and calculate startup timestamp of startup and set it on event_handler
-        event_handler.set_startup_time(message.substring(4).toInt() - int(millis() / 1000));
+        int t = int(message.substring(4).toInt()) - int(millis() / 1000);
+        event_handler.set_startup_time(t);
+        is_closed_event_handler.set_startup_time(t);
     } else if (message.startsWith("voltage")) {
         // voltage70
         // slave sets its battery percent
         // later it will be polled by Application
         slave_battery_voltage = int(message.substring(7).toInt());
+    } else if (message == "isClosedRead") {
+        tcp_server._send_json(clients[index], "isClosedEvents", is_closed_event_handler.read());
+    } else if (message == "isClosedFlush") {
+        is_closed_event_handler.flush();
+    } else if (message == "isClosedReadAndFlush") {
+        tcp_server._send_json(clients[index], "isClosedEvents", is_closed_event_handler.read());
+        is_closed_event_handler.flush();
     } else if (message == "read") {
         tcp_server._send_json(clients[index], "logs", event_handler.read());
     } else if (message == "flush") {
@@ -119,11 +139,18 @@ void TcpClient::message_handler(const String &message) {
     }
 }
 
-IRAM_ATTR void interrupt_callback(){
+IRAM_ATTR void sensor_interrupt_callback(){
     /*
      * this function is called by internal interrupt handler every time sensor goes low
      */
     debounce_handler.add(sensorPin, 0, false);
+}
+
+IRAM_ATTR void is_closed_interrupt_callback(){
+    /*
+     * this function is called by internal interrupt handler every time isClosedPin changes
+     */
+    debounce_handler.add(isClosedPin, digitalRead(isClosedPin), false);
 }
 
 void DebounceHandler::callback(int pin, int state, bool fake) {
@@ -138,20 +165,29 @@ void DebounceHandler::callback(int pin, int state, bool fake) {
     if (fake)
         return;
 
-    if (is_master) {
-        if (trigger_event(0))
-            vibrator.change();
+    if (pin == sensorPin) {
+        if (is_master) {
+            if (trigger_event(0))
+                vibrator.change();
+        } else
+            trigger_event(1);
     }
-    else
-        trigger_event(1);
+    else if (pin == isClosedPin){
+        if (state == 0)
+            is_closed_event_handler.add(0);
+        else
+            is_closed_event_handler.add(1);
+    }
 }
 
 void setup() {
     Serial.begin(115200);
     Serial.println("STARTING ....");
 
-    pinMode(sensorPin, INPUT_PULLUP);  // sensor
-    attachInterrupt(sensorPin, interrupt_callback, FALLING);
+    pinMode(sensorPin, INPUT_PULLUP);
+    pinMode(isClosedPin, INPUT_PULLUP);
+    attachInterrupt(sensorPin, sensor_interrupt_callback, FALLING);
+    attachInterrupt(isClosedPin, is_closed_interrupt_callback, CHANGE);
 }
 
 void loop() {
