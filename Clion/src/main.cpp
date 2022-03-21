@@ -7,7 +7,7 @@
 #include "TimedDigitalOutput.h"
 #include "BatteryVoltageMonitoring.h"
 
-#define isClosedPin 14
+#define isClosedPin 12
 #define sensorPin 5
 #define vibratorPin 4
 #define is_master true
@@ -150,7 +150,6 @@ IRAM_ATTR void is_closed_interrupt_callback(){
     /*
      * this function is called by internal interrupt handler every time isClosedPin changes
      */
-    print("is closed interrupt");
     debounce_handler.add(isClosedPin, digitalRead(isClosedPin), false);
 }
 
@@ -163,7 +162,6 @@ void DebounceHandler::callback(int pin, int state, bool fake) {
      *      state: the state which was event happened in
      *      fake: whether this event was fake or not
      */
-    print("fake: " + String(fake));
     if (fake)
         return;
 
@@ -175,7 +173,6 @@ void DebounceHandler::callback(int pin, int state, bool fake) {
             trigger_event(1);
     }
     else if (pin == isClosedPin){
-        print("is closed debounce handler");
         if (state == 0)
             is_closed_event_handler.add(0);
         else
