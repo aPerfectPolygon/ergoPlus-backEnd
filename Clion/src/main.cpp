@@ -34,6 +34,7 @@ bool trigger_event(int event) {
     if (is_master) {
         // add the event and broadcast the response to all listeners
         String result = event_handler.add(event);
+
         if (result != "") {
             tcp_server.broadcast_json("event", result);
             return true;
