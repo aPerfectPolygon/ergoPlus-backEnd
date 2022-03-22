@@ -59,7 +59,7 @@ void WifiHandler::connect() {
 }
 
 void WifiHandler::check(WiFiServer server, WiFiClient client) {
-    if (!check_time.check(int(millis() / 1000)))
+    if (!check_time.check(int(millis() / 30000),false))
         return;
 
     if (WiFi.status() != WL_CONNECTED) {

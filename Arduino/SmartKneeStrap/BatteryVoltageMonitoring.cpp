@@ -7,7 +7,7 @@ BatteryVoltageMonitoring::BatteryVoltageMonitoring(int _min, int _max){
 }
 
 bool BatteryVoltageMonitoring::check(){
-    if (value == 0 or check_time.check(int(millis() / 1000))) {
+    if (value == 0 or check_time.check(int(millis() / 1000), false)) {
         value = map(analogRead(A0), min, max, 0, 100);
         return true;
     }

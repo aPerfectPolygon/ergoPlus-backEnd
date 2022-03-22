@@ -9,8 +9,13 @@ CheckTime::CheckTime(unsigned long _last_check, int _check_interval) {
     check_interval = _check_interval;
 }
 
-bool CheckTime::check(unsigned long now) {
-    if (now == 0)
+bool CheckTime::check(unsigned long now, bool auto_now) {
+    if (first_time){
+        first_time = false;
+        last_check = now;
+        return true;
+    }
+    if (auto_now)
         now = millis();
     if (now - last_check < check_interval)
         return false;
