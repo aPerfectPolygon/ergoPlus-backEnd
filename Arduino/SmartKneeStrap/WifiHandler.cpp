@@ -22,7 +22,7 @@ void WifiHandler::connect() {
     if (WiFi.status() != WL_CONNECTED) {
         if (is_master) {
             WiFi.softAPConfig(
-                    IPAddress(192,168,4,1),
+                    IPAddress(192,168,4,35),
                     IPAddress(192,168,4,1),
                     IPAddress(255, 255, 255, 0)
             );
