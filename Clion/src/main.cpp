@@ -189,6 +189,8 @@ void setup() {
     pinMode(isClosedPin, INPUT_PULLUP);
     attachInterrupt(sensorPin, sensor_interrupt_callback, FALLING);
     attachInterrupt(isClosedPin, is_closed_interrupt_callback, CHANGE);
+
+	vibrator.change();
 }
 
 void loop() {
